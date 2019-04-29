@@ -1,0 +1,18 @@
+note over selain:
+käyttäjä kirjoittaa muistiinpanon
+tekstikenttään ja klikkaa nappia
+end note
+
+selain->palvelin: HTTP POST https://fullstack-exampleapp.herokuapp.com/new_note_spa
+
+note over palvelin:
+palvelin vastaanottaa ja käsittelee lähetetyn lomekedatan,
+jonka jälkeen muistiinpano tallennetaan tietokantaan
+end note
+
+palvelin->selain: vastauskoodi 201 ja vastaus {"message":"note created"}
+
+note over selain:
+muistiinpano talletetaan sivun tilaan
+ja sivu renderöidään uudelleen
+end note

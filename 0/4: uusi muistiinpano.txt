@@ -1,0 +1,19 @@
+note over selain:
+käyttäjä kirjoittaa muistiinpanon
+tekstikenttään ja klikkaa nappia
+end note
+
+selain->palvelin: HTTP POST https://fullstack-exampleapp.herokuapp.com/new_note
+
+note over palvelin:
+palvelin vastaanottaa ja käsittelee lähetetyn lomekedatan,
+jonka jälkeen muistiinpano tallennetaan tietokantaan
+end note
+
+palvelin->selain: vastauskoodi 302 ja uudelleenohjaus vastauksen antamaan osoitteeseen /notes
+
+selain->palvelin: HTTP GET https://fullstack-exampleapp.herokuapp.com/notes
+
+note over selain:
+GET-pyyntö jatkuu esimerkin mukaan...
+end note
