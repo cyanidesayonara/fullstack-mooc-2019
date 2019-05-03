@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, {
+  useState,
+  useEffect
+} from 'react'
 import Notification from './components/Notification'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
@@ -27,7 +30,7 @@ const App = () => {
     setTimeout(() => {
       setNotification(null)
       setError(null)
-    }, 3000)
+    }, 5000)
   }
 
   const addPerson = event => {
@@ -40,7 +43,19 @@ const App = () => {
 
     const existingPerson = persons.find(person => person.name === newName)
 
-    if (existingPerson) {
+    if (!existingPerson) {
+      personService
+        .create(person)
+        .then(response => {
+          setPersons(persons.concat(response))
+          setNewName('')
+          setNewNumber('')
+          showMessage(`Lisättiin ${person.name}`)
+        })
+        .catch(error => {
+          showMessage(error.response.data.error.message, true)
+        })
+    } else {
       if (window.confirm(`${newName} on jo luettelossa, korvataanko vanha numero uudella?`)) {
         personService
           .update(existingPerson.id, person)
@@ -53,18 +68,10 @@ const App = () => {
             setNewNumber('')
             showMessage(`Päivitettiin ${person.name}`)
           })
-          .catch(error => console.log(error))
+          .catch(error => {
+            showMessage(error.response.data.error.message, true)
+          })
       }
-    } else {
-      personService
-        .create(person)
-        .then(response => {
-          setPersons(persons.concat(response))
-          setNewName('')
-          setNewNumber('')
-          showMessage(`Lisättiin ${person.name}`)
-        })
-        .catch(error => console.log(error))
     }
   }
 
@@ -108,10 +115,7 @@ const App = () => {
         newNumber={newNumber}
       />
       <h2>Numerot</h2>
-      <Persons
-        persons={filteredPersons}
-        removePerson={removePerson}
-      />
+      <Persons persons={filteredPersons} removePerson={removePerson} />
     </div>
   )
 }
