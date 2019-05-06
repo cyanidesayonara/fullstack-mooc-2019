@@ -1,55 +1,17 @@
 const mongoose = require('mongoose')
 const supertest = require('supertest')
+const helper = require('./test_helper')
 const app = require('../app')
 const Blog = require('../models/blog')
 
 const api = supertest(app)
 
-const initialBlogs = [{
-    title: 'React patterns',
-    author: 'Michael Chan',
-    likes: 7,
-    url: 'www'
-  },
-  {
-    title: 'Go To Statement Considered Harmful',
-    author: 'Edsger W. Dijkstra',
-    likes: 5,
-    url: 'www'
-  },
-  {
-    title: 'Canonical string reduction',
-    author: 'Edsger W. Dijkstra',
-    likes: 12,
-    url: 'www'
-  },
-  {
-    title: 'First class tests',
-    author: 'Robert C. Martin',
-    likes: 10,
-    url: 'www'
-  },
-  {
-    title: 'TDD harms architecture',
-    author: 'Robert C. Martin',
-    likes: 0,
-    url: 'www'
-  },
-  {
-    title: 'Type wars',
-    author: 'Robert C. Martin',
-    likes: 2,
-    url: 'www'
-  }
-]
-
 beforeEach(async () => {
   await Blog.deleteMany({})
 
-  initialBlogs.map(async blog => {
-    const createdBlog = new Blog(blog)
-    await createdBlog.save()
-  })
+  const blogs = helper.initialBlogs.map(blog => new Blog(blog))
+  const promiseArray = blogs.map(blog => blog.save())
+  await Promise.all(promiseArray)
 })
 
 test('correct number of blogs are returned as json (step1)', async () => {
@@ -58,7 +20,7 @@ test('correct number of blogs are returned as json (step1)', async () => {
     .expect(200)
     .expect('Content-Type', /application\/json/)
 
-  expect(response.body.length).toBe(initialBlogs.length)
+  expect(response.body.length).toBe(helper.initialBlogs.length)
 })
 
 test('a specific blog is within the returned blogs', async () => {
@@ -92,7 +54,7 @@ test('a valid blog can be added and number of blogs will increase by one (step3)
 
   const titles = response.body.map(r => r.title)
 
-  expect(response.body.length).toBe(initialBlogs.length + 1)
+  expect(response.body.length).toBe(helper.initialBlogs.length + 1)
   expect(titles).toContain('title')
 })
 
@@ -124,7 +86,7 @@ test('blog without title and url is not added (step5)', async () => {
 
   const response = await api.get('/api/blogs')
 
-  expect(response.body.length).toBe(initialBlogs.length)
+  expect(response.body.length).toBe(helper.initialBlogs.length)
 })
 
 test('blog can be deleted (step1)', async () => {
