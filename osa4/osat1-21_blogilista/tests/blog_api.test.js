@@ -3,11 +3,32 @@ const supertest = require('supertest')
 const helper = require('./test_helper')
 const app = require('../app')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 const api = supertest(app)
 
+let token
+
 beforeEach(async () => {
   await Blog.deleteMany({})
+  await User.deleteMany({})
+
+  let user = new User({
+    username: 'xxx',
+    passwordHash: '$2b$10$WU7YRWktk70d2YPfVU.71euI9/rSErUFGRmWlrutN7Xj0gilR.jmK'
+  })
+  await user.save()
+
+  user = {
+    username: 'xxx',
+    password: '12345678'
+  }
+
+  const response = await api
+    .post('/api/login')
+    .send(user)
+
+  token = response.body.token
 
   const blogs = helper.initialBlogs.map(blog => new Blog(blog))
   const promiseArray = blogs.map(blog => blog.save())
@@ -48,6 +69,7 @@ test('a valid blog can be added and number of blogs will increase by one (step3)
 
   await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
     .send(newBlog)
 
   const response = await api.get('/api/blogs')
@@ -67,6 +89,7 @@ test('new blog has zero likes by default (step4)', async () => {
 
   const response = await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
     .send(newBlog)
     .expect(201)
 
@@ -81,6 +104,7 @@ test('blog without title and url is not added (step5)', async () => {
 
   await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
     .send(newBlog)
     .expect(400)
 
@@ -99,6 +123,7 @@ test('blog can be deleted (step1)', async () => {
 
   await api
     .delete(`/api/blogs/${firstBlogId}`)
+    .set('Authorization', `Bearer ${token}`)
     .expect(204)
 
   await api
@@ -120,6 +145,7 @@ test('blog can be updated and updated blog is found by id (step2)', async () => 
 
   await api
     .put(`/api/blogs/${firstBlogId}`)
+    .set('Authorization', `Bearer ${token}`)
     .send(blog)
     .expect(204)
 
